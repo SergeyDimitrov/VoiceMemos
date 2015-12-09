@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">VoiceMemos</string>
+
+    <string name="title_activity_audio_recorder">AudioRecorderActivity</string>
+    <string name="add_audio">Add</string>
+    <string name="start_recording">Record</string>
+    <string name="stop_recording">Stop</string>
+    <string name="unknown_state_error">Unknown state</string>
+    <string name="recorder_prepare_error">Recorder preparation failed</string>
+    <string name="save_dialog_title">Save Voice Memo</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="cant_create_file_error">Can\'t create file</string>
+    <string name="default_audio_name">Voice Memo</string>
+    <string name="empty_audioname_error">Can\'t create file with empty name</string>
+    <string name="temp_audio_filename">voice_memos_audio_temp_sample.3gp</string>
+    <string name="writing_file_error">Writing file error</string>
+    <string name="closing_streams_error">Closing streams error</string>
+    <string name="no_file_error">No file</string>
+    <string name="empty_view_text">No audios added yet!</string>
+
+</resources>
