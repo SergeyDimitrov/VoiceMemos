@@ -1,5 +1,9 @@
 package com.example.pb.voicememos;
 
+import android.os.Environment;
+import android.util.Log;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -34,4 +38,19 @@ public class AudioLab {
         filenames.add(newAudio.getName());
     }
 
+    public AudioRecord getPositionRecord(int position) {
+        return audioRecords.get(position);
+    }
+
+    public void deleteFile(AudioRecord record) {
+        File audioFile = new File(Environment.getExternalStorageDirectory().getPath()
+                + "/Music/" + record.getName() + ".3gp");
+        if (audioFile.delete()) {
+            Log.d("myTAG", "OK. File deleted");
+        } else {
+            Log.d("myTAG", "NOT OK. File is not deleted");
+        }
+        audioRecords.remove(record);
+        filenames.remove(record.getName());
+    }
 }

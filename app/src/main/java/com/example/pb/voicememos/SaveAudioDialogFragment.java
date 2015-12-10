@@ -23,12 +23,26 @@ public class SaveAudioDialogFragment extends DialogFragment {
     private static final int BUFFER_SIZE = 1024;
     public static final String EXTRA_FILENAME = "extra_filename";
 
+    public static final String SOURCE_FILENAME_KEY = "source_filename";
+    public static final String IS_RENAMING_KEY = "is_renaming";
+
+    public static SaveAudioDialogFragment getInstance(boolean isRenaming, String oldName) {
+        SaveAudioDialogFragment fragment = new SaveAudioDialogFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(IS_RENAMING_KEY, isRenaming);
+        args.putString(SOURCE_FILENAME_KEY, oldName);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_save, null);
 
         audioName = (EditText)v.findViewById(R.id.audio_name);
         audioName.setText(getNextName());
+        final boolean isRenaming = getArguments().getBoolean(IS_RENAMING_KEY);
+        final String sourceFilename = getArguments().getString(SOURCE_FILENAME_KEY);
 
         return new AlertDialog.Builder(getActivity()).
                 setView(v).
@@ -46,14 +60,19 @@ public class SaveAudioDialogFragment extends DialogFragment {
                             FileInputStream in = null;
                             FileOutputStream out = null;
                             try {
-                                in = new FileInputStream(getActivity().getFilesDir() + "/"
-                                        + getResources().getString(R.string.temp_audio_filename));
+                                if (!isRenaming) {
+                                    in = new FileInputStream(getActivity().getFilesDir() + "/"
+                                            + getResources().getString(R.string.temp_audio_filename));
+                                } else {
+                                    in = new FileInputStream(Environment.getExternalStorageDirectory().getPath()
+                                    + "/Music/" + sourceFilename + ".3gp");
+                                }
 
                                 out = new FileOutputStream(Environment.getExternalStorageDirectory().getPath()
                                         + "/Music/" + filename + ".3gp");
 
                                 byte[] buffer = new byte[BUFFER_SIZE];
-                                int bytesRead = 0;
+                                int bytesRead;
 
                                 while ((bytesRead = in.read(buffer)) > 0) {
                                     out.write(buffer, 0, bytesRead);

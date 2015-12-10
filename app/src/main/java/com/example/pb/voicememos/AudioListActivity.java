@@ -9,7 +9,7 @@ public class AudioListActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_audios);
+        setContentView(R.layout.activity_audio_list);
 
         FragmentManager fm = getFragmentManager();
         AudioListFragment fragment = (AudioListFragment)fm.findFragmentById(R.id.list_fragment_container);

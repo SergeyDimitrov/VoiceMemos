@@ -138,7 +138,7 @@ public class AudioRecorderFragment extends Fragment {
 
     private void showSaveDialog() {
         FragmentManager fm = getActivity().getFragmentManager();
-        SaveAudioDialogFragment fragment = new SaveAudioDialogFragment();
+        SaveAudioDialogFragment fragment = SaveAudioDialogFragment.getInstance(false, null);
         fragment.setTargetFragment(this, REQUEST_SAVE);
         fragment.show(fm, SAVE_DIALOG_TAG);
     }

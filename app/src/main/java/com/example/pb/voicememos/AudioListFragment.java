@@ -1,5 +1,7 @@
 package com.example.pb.voicememos;
 
+import android.app.Activity;
+import android.app.FragmentManager;
 import android.app.ListFragment;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -8,11 +10,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -27,6 +31,13 @@ import java.util.Date;
 public class AudioListFragment extends ListFragment {
 
     private MediaPlayer player;
+    private AudioRecord lastPlaying;
+    private AudioRecord longClickedItem;
+
+    private static final int REQUEST_ITEM_MENU = 1;
+    private static final int REQUEST_RENAME = 2;
+    private static final String ITEM_DIALOG_TAG = "item_dialog";
+    private static final String RENAME_DIALOG_TAG = "rename_dialog";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,9 +48,8 @@ public class AudioListFragment extends ListFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        setEmptyText(getResources().getString(R.string.empty_view_text));
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_audio_list, parent, false);
     }
 
     @Override
@@ -51,8 +61,13 @@ public class AudioListFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         AudioRecord audioRecord = (AudioRecord) getListAdapter().getItem(position);
+        playAudio(audioRecord);
+    }
+
+    private void playAudio(AudioRecord record) {
+        lastPlaying = record;
         String filePath = Environment.getExternalStorageDirectory().getPath()
-                + "/Music/" + audioRecord.getName() + ".3gp";
+                + "/Music/" + record.getName() + ".3gp";
         if (player != null) {
             releasePlayer();
         }
@@ -78,6 +93,31 @@ public class AudioListFragment extends ListFragment {
             }
         });
         player.prepareAsync();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                longClickedItem = AudioLab.getInstance().getPositionRecord(position);
+                showItemDialog(AudioLab.getInstance().getPositionRecord(position));
+                return true;
+            }
+        });
+    }
+
+    private void showItemDialog(AudioRecord record) {
+        FragmentManager fm = getActivity().getFragmentManager();
+        boolean isPlaying = isPlaying(record);
+        ListItemDialogFragment fragment = ListItemDialogFragment.getInstance(isPlaying);
+        fragment.setTargetFragment(this, REQUEST_ITEM_MENU);
+        fragment.show(fm, ITEM_DIALOG_TAG);
+    }
+
+    private boolean isPlaying(AudioRecord record) {
+        return player != null && record.equals(lastPlaying);
     }
 
     private void releasePlayer() {
@@ -135,6 +175,48 @@ public class AudioListFragment extends ListFragment {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_ITEM_MENU:
+                if (resultCode == Activity.RESULT_OK) {
+                    int command = data.getExtras().getInt(ListItemDialogFragment.EXTRA_COMMAND);
+                    switch (command) {
+                        case ListItemDialogFragment.START_KEY:
+                            playAudio(longClickedItem);
+                            break;
+                        case ListItemDialogFragment.STOP_KEY:
+                            releasePlayer();
+                            break;
+                        case ListItemDialogFragment.DELETE_KEY:
+                            if (isPlaying(longClickedItem)) releasePlayer();
+                            AudioLab.getInstance().deleteFile(longClickedItem);
+                            ((AudioAdapter) getListAdapter()).notifyDataSetChanged();
+                            break;
+                        case ListItemDialogFragment.RENAME_KEY:
+                            if (isPlaying(longClickedItem)) releasePlayer();
+                            FragmentManager fm = getActivity().getFragmentManager();
+                            SaveAudioDialogFragment fragment = SaveAudioDialogFragment.getInstance(true, longClickedItem.getName());
+                            fragment.setTargetFragment(this, REQUEST_RENAME);
+                            fragment.show(fm, RENAME_DIALOG_TAG);
+                    }
+                }
+                break;
+            case REQUEST_RENAME:
+                if (resultCode == Activity.RESULT_OK) {
+                    String newFilename = data.getExtras().getString(SaveAudioDialogFragment.EXTRA_FILENAME);
+                    AudioRecord renamedRecord = new AudioRecord(longClickedItem.getDate(), newFilename);
+                    AudioLab.getInstance().deleteFile(longClickedItem);
+                    AudioLab.getInstance().add(renamedRecord);
+                    ((AudioAdapter) getListAdapter()).notifyDataSetChanged();
+                }
+                break;
+            default:
+                Toast.makeText(getActivity(), R.string.wrong_case, Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 }

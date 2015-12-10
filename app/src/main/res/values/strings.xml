@@ -18,5 +18,6 @@
     <string name="closing_streams_error">Closing streams error</string>
     <string name="no_file_error">No file</string>
     <string name="empty_view_text">No audios added yet!</string>
+    <string name="wrong_case">Can\'t resolve menu item</string>
 
 </resources>
