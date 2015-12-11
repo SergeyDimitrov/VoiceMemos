@@ -208,10 +208,14 @@ public class AudioListFragment extends ListFragment {
             case REQUEST_RENAME:
                 if (resultCode == Activity.RESULT_OK) {
                     String newFilename = data.getExtras().getString(SaveAudioDialogFragment.EXTRA_FILENAME);
-                    AudioRecord renamedRecord = new AudioRecord(longClickedItem.getDate(), newFilename);
-                    AudioLab.getInstance().deleteFile(longClickedItem);
-                    AudioLab.getInstance().add(renamedRecord);
-                    ((AudioAdapter) getListAdapter()).notifyDataSetChanged();
+                    if (newFilename == null) {
+                        Toast.makeText(getActivity(), R.string.filename_exists, Toast.LENGTH_SHORT).show();
+                    } else {
+                        AudioRecord renamedRecord = new AudioRecord(longClickedItem.getDate(), newFilename);
+                        AudioLab.getInstance().deleteFile(longClickedItem);
+                        AudioLab.getInstance().add(renamedRecord);
+                        ((AudioAdapter) getListAdapter()).notifyDataSetChanged();
+                    }
                 }
                 break;
             default:

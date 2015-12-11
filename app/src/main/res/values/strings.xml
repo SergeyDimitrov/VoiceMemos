@@ -19,5 +19,6 @@
     <string name="no_file_error">No file</string>
     <string name="empty_view_text">No audios added yet!</string>
     <string name="wrong_case">Can\'t resolve menu item</string>
+    <string name="filename_exists">Filename already exists</string>
 
 </resources>

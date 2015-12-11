@@ -39,10 +39,12 @@ public class SaveAudioDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_save, null);
 
-        audioName = (EditText)v.findViewById(R.id.audio_name);
-        audioName.setText(getNextName());
         final boolean isRenaming = getArguments().getBoolean(IS_RENAMING_KEY);
         final String sourceFilename = getArguments().getString(SOURCE_FILENAME_KEY);
+
+        audioName = (EditText)v.findViewById(R.id.audio_name);
+        if (sourceFilename == null) audioName.setText(getNextName());
+        else audioName.setText(sourceFilename);
 
         return new AlertDialog.Builder(getActivity()).
                 setView(v).
@@ -57,6 +59,13 @@ public class SaveAudioDialogFragment extends DialogFragment {
                             success = false;
                         } else {
                             filename = getUniqueFilename(audioName.getText().toString());
+                            if (isRenaming) {
+                                Log.d("myTAG", "Here");
+                                if (!filename.equals(audioName.getText().toString())) {
+                                    sendResult(Activity.RESULT_OK, null);
+                                    return;
+                                }
+                            }
                             FileInputStream in = null;
                             FileOutputStream out = null;
                             try {
@@ -65,7 +74,7 @@ public class SaveAudioDialogFragment extends DialogFragment {
                                             + getResources().getString(R.string.temp_audio_filename));
                                 } else {
                                     in = new FileInputStream(Environment.getExternalStorageDirectory().getPath()
-                                    + "/Music/" + sourceFilename + ".3gp");
+                                            + "/Music/" + sourceFilename + ".3gp");
                                 }
 
                                 out = new FileOutputStream(Environment.getExternalStorageDirectory().getPath()
@@ -111,7 +120,17 @@ public class SaveAudioDialogFragment extends DialogFragment {
 
     private String getNextName() {
         AudioLab al = AudioLab.getInstance();
-        return getResources().getString(R.string.default_audio_name) + " " + getNumber(al.getAudios().size() + 1);
+        int currNum = al.getAudios().size() + 1;
+        String currFilename = null;
+        boolean found = false;
+        while (!found) {
+            currFilename = getResources().getString(R.string.default_audio_name) + " " + getNumber(currNum);
+            if (!AudioLab.getInstance().doesNameExist(currFilename)) {
+                found = true;
+            }
+            currNum++;
+        }
+        return currFilename;
     }
 
     private String getNumber(int num) {

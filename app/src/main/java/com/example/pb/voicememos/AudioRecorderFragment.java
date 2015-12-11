@@ -62,7 +62,7 @@ public class AudioRecorderFragment extends Fragment {
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
         recorder.setOutputFile(getActivity().getFilesDir() + "/" + getResources().getString(R.string.temp_audio_filename));
     }
 
